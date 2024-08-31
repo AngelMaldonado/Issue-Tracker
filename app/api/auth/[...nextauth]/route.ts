@@ -1,16 +1,16 @@
 import NextAuth from "next-auth"
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import GoogleProvider from "next-auth/providers/google";
+import prisma from "@/prisma/client"
 
 const handler = NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!
     })
   ]
 })
 
 export { handler as GET, handler as POST }
-
-function GoogleProvider(arg0: { clientId: string | undefined; clientSecret: string | undefined }): import("next-auth/providers/index").Provider {
-  throw new Error("Function not implemented.")
-}
