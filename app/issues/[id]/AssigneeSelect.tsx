@@ -1,37 +1,33 @@
 "use client"
+import { Skeleton } from '@/app/components'
 import { Issue, User } from '@prisma/client'
 import { Select } from '@radix-ui/themes'
 import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import { useQuery } from 'react-query'
-import { Skeleton } from '@/app/components'
 import toast, { Toaster } from 'react-hot-toast'
+import { useQuery } from 'react-query'
 
 export default function AssigneeSelect({ issue }: { issue: Issue }) {
-  const { data: users, error, isLoading } = useQuery<User[]>({
-    queryKey: 'users',
-    queryFn: () => axios.get('/api/users').then(res => res.data),
-    staleTime: 60 * 1000, // 1 minute refetch interval (full page reload will still refetch)
-    retry: 3
-  })
+  const { data: users, error, isLoading } = useUsers()
 
   if (isLoading) return <Skeleton />
 
   if (error) return null
 
+  const assignIssue = async (userId: string) => {
+    try {
+      await axios.patch(
+        `/api/issues/${issue.id}`,
+        { assignedToUserId: userId === "unassigned" ? null : userId })
+    } catch (error) {
+      toast.error('Changes could not be saved. Please try again.')
+    }
+  }
+
   return (
     <>
       <Select.Root
         defaultValue={issue.assignedToUserId || "unassigned"}
-        onValueChange={async (userId) => {
-          try {
-            await axios.patch(
-              `/api/issues/${issue.id}`,
-              { assignedToUserId: userId === "unassigned" ? null : userId })
-          } catch (error) {
-            toast.error('Changes could not be saved. Please try again.')
-          }
-        }}
+        onValueChange={assignIssue}
       >
         <Select.Trigger placeholder='Assign...' />
         <Select.Content>
@@ -46,3 +42,10 @@ export default function AssigneeSelect({ issue }: { issue: Issue }) {
     </>
   )
 }
+
+const useUsers = () => useQuery<User[]>({
+  queryKey: 'users',
+  queryFn: () => axios.get('/api/users').then(res => res.data),
+  staleTime: 60 * 1000, // 1 minute refetch interval (full page reload will still refetch)
+  retry: 3
+})
