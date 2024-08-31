@@ -10,7 +10,7 @@ export default function NavBar() {
 
   const links = [
     { label: 'Dasboard', href: '/' },
-    { label: 'Issues', href: '/issues' }
+    { label: 'Issues', href: '/issues/list' }
   ]
 
   return (
